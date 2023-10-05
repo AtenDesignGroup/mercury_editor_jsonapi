@@ -1,0 +1,16 @@
+{
+  "name": "atendesigngroup/mercury_editor_jsonapi",
+  "type": "drupal-module",
+  "description": "Mercury Editor JSONApi integration for Drupal",
+  "keywords": ["Drupal"],
+  "homepage": "https://github.com/AtenDesignGroup/mercury_editor_jsonapi",
+  "support": {
+    "issues": "https://github.com/AtenDesignGroup/mercury_editor_jsonapi",
+    "source": "https://github.com/AtenDesignGroup/mercury_editor_jsonapi"
+  },
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev",
+  "require": {
+    "drupal/mercury_editor": "^2.1",
+  }
+}
