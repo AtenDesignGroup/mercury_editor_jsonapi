@@ -11,6 +11,6 @@
   "license": "GPL-2.0+",
   "minimum-stability": "dev",
   "require": {
-    "drupal/mercury_editor": "^2.1",
+    "drupal/mercury_editor": "^2.1"
   }
 }
