@@ -1,0 +1,11 @@
+mercury_editor_jsonapi.mercury_editor_entity:
+  path: '/%jsonapi%/mercury-editor/{mercury_editor_entity}'
+  defaults:
+    _jsonapi_resource: Drupal\mercury_editor_jsonapi\Resource\MercuryEditorEntityResource
+  requirements:
+    _permission: 'access content'
+    _format: json
+  options:
+    parameters:
+      mercury_editor_entity:
+        type: mercury_editor_entity

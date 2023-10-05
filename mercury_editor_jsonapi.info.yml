@@ -1,0 +1,8 @@
+name: Mercury Editor JsonApi
+type: module
+description: 'Provides a JsonApi endpoint for the Mercury Editor.'
+core_version_requirement: ^9 || ^10
+package: Mercury Editor
+dependencies:
+  - jsonapi
+  - mercury_editor
