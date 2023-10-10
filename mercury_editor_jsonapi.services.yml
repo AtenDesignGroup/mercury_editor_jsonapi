@@ -1,0 +1,6 @@
+services:
+  mercury_editor.jsonapi.include_resolver:
+    class: Drupal\mercury_editor_jsonapi\MercuryEditorIncludeResolver
+    arguments:
+      - '@entity_type.manager'
+      - '@jsonapi.entity_access_checker'
