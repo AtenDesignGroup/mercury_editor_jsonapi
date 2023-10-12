@@ -1,2 +1,18 @@
+mercury_editor_jsonapi.field_list.json:
+  path: '/jsonapi/mercury-editor/field-list/json'
+  defaults:
+    _controller: '\Drupal\mercury_editor_jsonapi\Controller\FieldList::listFields'
+    _title: 'Mercury Editor Field List'
+  requirements:
+    _permission: 'administer fields'
+
+mercury_editor_jsonapi.field_list.query_string:
+  path: '/mercury-editor/field-list/plaintext'
+  defaults:
+    _controller: '\Drupal\mercury_editor_jsonapi\Controller\FieldList::queryString'
+    _title: 'Mercury Editor Field List'
+  requirements:
+    _permission: 'administer fields'
+
 route_callbacks:
   - '\Drupal\mercury_editor_jsonapi\Routing\Routes::routes'
