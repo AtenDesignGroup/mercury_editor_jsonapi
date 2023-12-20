@@ -7,6 +7,7 @@ use Drupal\jsonapi\ResourceResponse;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\jsonapi\JsonApiResource\Link;
 use Drupal\jsonapi\CacheableResourceResponse;
+use Drupal\jsonapi\ResourceType\ResourceType;
 use Symfony\Component\HttpFoundation\Request;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\jsonapi\JsonApiResource\IncludedData;
@@ -74,6 +75,98 @@ class MercuryEditorEntityResource extends EntityResourceBase implements Containe
     $response = $this->buildWrappedResponse($primary_data, $request, $this->getIncludes($request, $primary_data));
     return $response;
   }
+
+  /**
+   * Gets the collection of entities.
+   *
+   * @param \Drupal\jsonapi\ResourceType\ResourceType $resource_type
+   *   The JSON:API resource type for the request to be served.
+   * @param \Symfony\Component\HttpFoundation\Request $request
+   *   The request object.
+   *
+   * @return \Drupal\jsonapi\ResourceResponse
+   *   The response.
+   *
+   * @throws \Drupal\Core\Http\Exception\CacheableBadRequestHttpException
+   *   Thrown when filtering on a config entity which does not support it.
+   */
+  public function getCollection(ResourceType $resource_type, Request $request) {
+    // Instantiate the query for the filtering.
+    $entity_type_id = $resource_type->getEntityTypeId();
+
+    $query_cacheability = new CacheableMetadata();
+
+    // If the request is for the latest revision, toggle it on entity query.
+    if ($request->get(ResourceVersionRouteEnhancer::WORKING_COPIES_REQUESTED, FALSE)) {
+      $query->latestRevision();
+    }
+
+    try {
+      $results = $this->executeQueryInRenderContext(
+        $query,
+        $query_cacheability
+      );
+    }
+    catch (\LogicException $e) {
+      // Ensure good DX when an entity query involves a config entity type.
+      // For example: getting users with a particular role, which is a config
+      // entity type: https://www.drupal.org/project/drupal/issues/2959445.
+      // @todo Remove the message parsing in https://www.drupal.org/project/drupal/issues/3028967.
+      if (str_starts_with($e->getMessage(), 'Getting the base fields is not supported for entity type')) {
+        preg_match('/entity type (.*)\./', $e->getMessage(), $matches);
+        $config_entity_type_id = $matches[1];
+        $cacheability = (new CacheableMetadata())->addCacheContexts(['url.path', 'url.query_args:filter']);
+        throw new CacheableBadRequestHttpException($cacheability, sprintf("Filtering on config entities is not supported by Drupal's entity API. You tried to filter on a %s config entity.", $config_entity_type_id));
+      }
+      else {
+        throw $e;
+      }
+    }
+
+    $storage = $this->entityTypeManager->getStorage($entity_type_id);
+    // We request N+1 items to find out if there is a next page for the pager.
+    // We may need to remove that extra item before loading the entities.
+    $pager_size = $query->getMetaData('pager_size');
+    if ($has_next_page = $pager_size < count($results)) {
+      // Drop the last result.
+      array_pop($results);
+    }
+    // Each item of the collection data contains an array with 'entity' and
+    // 'access' elements.
+    $collection_data = $this->loadEntitiesWithAccess($storage, $results, $request->get(ResourceVersionRouteEnhancer::WORKING_COPIES_REQUESTED, FALSE));
+    $primary_data = new ResourceObjectData($collection_data);
+    $primary_data->setHasNextPage($has_next_page);
+
+    // Calculate all the results and pass into a JSON:API Data object.
+    $count_query_cacheability = new CacheableMetadata();
+    if ($resource_type->includeCount()) {
+      $count_query = $this->getCollectionCountQuery($resource_type, $params, $count_query_cacheability);
+      $total_results = $this->executeQueryInRenderContext(
+        $count_query,
+        $count_query_cacheability
+      );
+
+      $primary_data->setTotalCount($total_results);
+    }
+
+    $response = $this->respondWithCollection($primary_data, $this->getIncludes($request, $primary_data), $request, $resource_type, $params[OffsetPage::KEY_NAME]);
+
+    $response->addCacheableDependency($query_cacheability);
+    $response->addCacheableDependency($count_query_cacheability);
+    $response->addCacheableDependency((new CacheableMetadata())
+      ->addCacheContexts([
+        'url.query_args:filter',
+        'url.query_args:sort',
+        'url.query_args:page',
+      ]));
+
+    if ($resource_type->isVersionable()) {
+      $response->addCacheableDependency((new CacheableMetadata())->addCacheContexts([ResourceVersionRouteEnhancer::CACHE_CONTEXT]));
+    }
+
+    return $response;
+  }
+
 
   /**
    * Builds a response with the appropriate wrapped document.

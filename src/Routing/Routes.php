@@ -39,23 +39,26 @@ class Routes implements ContainerInjectionInterface {
    */
   public function routes() {
     // @toto Refactor for 'bundles' once #3388911 is in.
-    foreach (array_keys($this->config->get('content_types')) as $bundle) {
-      $routes['mercury_editor_jsonapi.resouce.node.' . $bundle] = new Route(
-        "/%jsonapi%/mercury-editor/node/{$bundle}/{mercury_editor_entity}",
-        [
-          '_jsonapi_resource' => 'Drupal\mercury_editor_jsonapi\Resource\MercuryEditorEntityResource',
-          '_jsonapi_resource_types' => ["node--{$bundle}"],
-        ],
-        [
-          '_permission' => 'access content',
-        ],
-        [
-          'parameters' => [
-            'mercury_editor_entity' => [
-              'type' => 'mercury_editor_entity',
-            ],
+    foreach ($this->config->get('bundles') as $entity_type => $bundles) {
+      foreach ($bundles as $bundle) {
+        $routes['mercury_editor_jsonapi.resource.' . $entity_type . '.' . $bundle] = new Route(
+          "/%jsonapi%/mercury-editor/{$entity_type}/{$bundle}/{mercury_editor_entity}",
+          [
+            '_jsonapi_resource' => 'Drupal\mercury_editor_jsonapi\Resource\MercuryEditorEntityResource',
+            '_jsonapi_resource_types' => ["{$entity_type}--{$bundle}"],
           ],
-        ]);
+          [
+            '_permission' => 'access content',
+          ],
+          [
+            'parameters' => [
+              'mercury_editor_entity' => [
+                'type' => 'mercury_editor_entity',
+              ],
+            ],
+          ]
+        );
+      }
     }
     return $routes;
   }

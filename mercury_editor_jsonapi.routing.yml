@@ -1,3 +1,10 @@
+mercury_editor_jsonapi.jsonapi.resource_list:
+  path: '/jsonapi/mercury-editor'
+  defaults:
+    _controller: 'Drupal\mercury_editor_jsonapi\Controller\MercuryEditorEntryPoint::index'
+  requirements:
+    _access: 'TRUE'
+
 mercury_editor_jsonapi.field_list.json:
   path: '/jsonapi/mercury-editor/field-list/json'
   defaults:
