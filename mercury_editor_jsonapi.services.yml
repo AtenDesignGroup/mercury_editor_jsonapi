@@ -1,6 +1,17 @@
 services:
-  mercury_editor.jsonapi.include_resolver:
+  # Override core JSON:API resolver.
+  jsonapi.include_resolver:
     class: Drupal\mercury_editor_jsonapi\MercuryEditorIncludeResolver
     arguments:
       - '@entity_type.manager'
       - '@jsonapi.entity_access_checker'
+  paramconverter.jsonapi.entity_uuid:
+    parent: paramconverter.entity
+    class: Drupal\mercury_editor_jsonapi\ParamConverter\MercuryEditorEntityUuidConverter
+    calls:
+      - [setLanguageManager, ['@language_manager']]
+      - [setMercuryEditorTempstore, ['@mercury_editor.tempstore_repository']]
+      - [setCurrentUser, ['@current_user']]
+    tags:
+      # Priority 10, to ensure it runs before @paramconverter.entity.
+      - { name: paramconverter, priority: 10 }
