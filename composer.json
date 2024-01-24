@@ -9,8 +9,5 @@
     "source": "https://github.com/AtenDesignGroup/mercury_editor_jsonapi"
   },
   "license": "GPL-2.0+",
-  "minimum-stability": "dev",
-  "require": {
-    "drupal/mercury_editor": "^2.1"
-  }
+  "minimum-stability": "dev"
 }
