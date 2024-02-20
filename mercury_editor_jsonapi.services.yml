@@ -12,6 +12,7 @@ services:
       - [setLanguageManager, ['@language_manager']]
       - [setMercuryEditorTempstore, ['@mercury_editor.tempstore_repository']]
       - [setCurrentUser, ['@current_user']]
+      - [setKillSwitch, ['@page_cache_kill_switch']]
     tags:
       # Priority 10, to ensure it runs before @paramconverter.entity.
       - { name: paramconverter, priority: 10 }

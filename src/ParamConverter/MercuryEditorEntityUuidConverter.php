@@ -11,6 +11,7 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\ParamConverter\EntityConverter;
 use Drupal\mercury_editor\MercuryEditorTempstore;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\jsonapi\ParamConverter\EntityUuidConverter;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
@@ -42,6 +43,23 @@ class MercuryEditorEntityUuidConverter extends EntityUuidConverter {
    * @var Drupal\Core\Session\AccountProxyInterface
    */
   protected $currentUser;
+
+  /**
+   * Page cache kill switch.
+   *
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   */
+  protected $killSwitch;
+
+  /**
+   * Injects the page cache kill switch.
+   *
+   * @param Drupal\Core\PageCache\ResponsePolicy\KillSwitch $kill_switch
+   *   The page cache kill switch.
+   */
+  public function setKillSwitch(KillSwitch $kill_switch) {
+    $this->killSwitch = $kill_switch;
+  }
 
   /**
    * Injects the Mercury Editor tempstore service.
