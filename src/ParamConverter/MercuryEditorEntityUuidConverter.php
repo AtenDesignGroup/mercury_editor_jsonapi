@@ -2,17 +2,11 @@
 
 namespace Drupal\mercury_editor_jsonapi\ParamConverter;
 
-use Drupal\jsonapi\Routing\Routes;
-use Symfony\Component\Routing\Route;
-use Drupal\Core\Language\LanguageInterface;
-use Drupal\Core\Entity\TranslatableInterface;
-use Drupal\Core\Routing\RouteObjectInterface;
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\Core\ParamConverter\EntityConverter;
 use Drupal\mercury_editor\MercuryEditorTempstore;
-use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\PageCache\ResponsePolicy\KillSwitch;
 use Drupal\jsonapi\ParamConverter\EntityUuidConverter;
-use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 /**
  * Parameter converter for upcasting entity UUIDs to full objects.
@@ -44,6 +38,23 @@ class MercuryEditorEntityUuidConverter extends EntityUuidConverter {
   protected $currentUser;
 
   /**
+   * Page cache kill switch.
+   *
+   * @var \Drupal\Core\PageCache\ResponsePolicy\KillSwitch
+   */
+  protected $killSwitch;
+
+  /**
+   * Injects the page cache kill switch.
+   *
+   * @param Drupal\Core\PageCache\ResponsePolicy\KillSwitch $kill_switch
+   *   The page cache kill switch.
+   */
+  public function setKillSwitch(KillSwitch $kill_switch) {
+    $this->killSwitch = $kill_switch;
+  }
+
+  /**
    * Injects the Mercury Editor tempstore service.
    *
    * @param \Drupal\mercury_editor\MercuryEditorTempstore $mercury_editor_tempstore
@@ -70,14 +81,29 @@ class MercuryEditorEntityUuidConverter extends EntityUuidConverter {
     if ($this->currentUser->id()) {
       $entity = $this->mercuryEditorTempstore->get($value);
       if ($entity) {
+        $this->killSwitch->trigger();
+        $this->clearNormalizationCache($entity);
         return $entity;
       }
       $paragraph = $this->mercuryEditorTempstore->getComponent($value);
       if ($paragraph) {
+        $this->killSwitch->trigger();
+        $this->clearNormalizationCache($paragraph);
         return $paragraph;
       }
     }
     return parent::convert($value, $definition, $name, $defaults);
+  }
+
+  /**
+   * Deletes a normalization cache entry.
+   *
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
+   *   The entity for which to delete the cache entry.
+   */
+  protected function clearNormalizationCache(ContentEntityInterface $entity) {
+    $cid = $entity->getEntityTypeId() . '--' . $entity->bundle() . ':' . $entity->uuid() . ':' . $entity->language()->getId();
+    \Drupal::service('cache.jsonapi_normalizations')->delete($cid);
   }
 
 }
