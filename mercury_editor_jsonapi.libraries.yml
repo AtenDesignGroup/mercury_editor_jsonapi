@@ -1,0 +1,11 @@
+# Custom library for general purposes.
+preview_toggle:
+  js:
+    js/preview-toggle.js: {}
+  css:
+    component:
+      css/preview-toggle.css: {}
+  dependencies:
+    - core/drupal
+    - core/drupalSettings
+    - core/once

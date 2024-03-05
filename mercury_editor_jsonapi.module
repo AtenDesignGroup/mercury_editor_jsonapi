@@ -1,0 +1,11 @@
+<?php
+
+/**
+ * Implements hook_page_attachments().
+ */
+function mercury_editor_jsonapi_page_attachments(array &$attachments) {
+  // Only attach the library if the current route is the Mercury Editor edit screen
+  if (\Drupal::routeMatch()->getRouteName() === 'mercury_editor.editor') {
+    $attachments['#attached']['library'][] = 'mercury_editor_jsonapi/preview_toggle';
+  }
+}
