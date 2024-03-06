@@ -18,16 +18,17 @@
         }
 
         const url = iframe.src;
+        const drupalUrl = new URL(url);
         const toggle = document.createElement('button');
-        toggle.classList.add('me-toolbar__screen-control');
+        toggle.classList.add('me-button--secondary');
         toggle.innerHTML = 'Toggle Preview';
         toggle.addEventListener('click', () => {
-          const drupalUrl = url;
-          // const decoupledUrl = drupalSettings.mercury_editor_jsonapi.decoupledPreviewUrl;
-          const decoupledUrl = url
-            .replace('http://quadient-drupal.lndo.site/en/node/', 'http://localhost:3000/en/mercury-editor/node/page/')
-            .replace('/mercury-editor-preview', '');
-          const newUrl = iframe.src === drupalUrl ? decoupledUrl : drupalUrl;
+          const uuid = drupalUrl.pathname.replace('/mercury-editor-preview', '').split('/').pop();
+          const decoupledUrl = new URL(url);
+          decoupledUrl.pathname = `/en/mercury-editor/node/page/${uuid}`;
+          decoupledUrl.host = 'localhost:3000';
+
+          const newUrl = iframe.src === drupalUrl.toString() ? decoupledUrl.toString() : drupalUrl.toString();
           iframe.src = newUrl;
         });
         // insert toggle before controls
