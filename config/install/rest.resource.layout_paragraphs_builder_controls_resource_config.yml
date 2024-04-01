@@ -7,4 +7,4 @@ configuration:
       - json
     supported_auth:
       - cookie
-      - oath2
+      - oauth2
