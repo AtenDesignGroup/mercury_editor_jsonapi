@@ -1,0 +1,10 @@
+id: layout_paragraphs_builder_controls_resource_config
+plugin_id: layout_paragraphs_builder_controls_resource
+granularity: method
+configuration:
+  GET:
+    supported_formats:
+      - json
+    supported_auth:
+      - cookie
+      - oath2
