@@ -101,11 +101,14 @@ class LayoutParagraphsBuilderControlsResource extends ResourceBase {
       foreach ($entity->lp_storage_keys as $key) {
         $layout = $this->layoutParagraphsTempstore->getWithStorageKey($key);
         if ($layout) {
-          $layout_element = $this->elementInfoManager->createInstance('layout_paragraphs_builder');
-          $prerendered = $layout_element->preRender([
+          $builder_element = [
+            '#type' => 'layout_paragraphs_builder',
             '#layout_paragraphs_layout' => $layout,
-          ]);
-          $ui_elements[$key] = $prerendered['#attached']['drupalSettings']['lpBuilder']['uiElements'] ?? [];
+          ];
+          $this->renderer->renderRoot($builder_element);
+          $attached = AttachedAssets::createFromRenderArray($builder_element);
+          $assets = $attached->getSettings() ?? [];
+          $ui_elements[$key] = $assets['lpBuilder']['uiElements'] ?? [];
         }
       }
     }
