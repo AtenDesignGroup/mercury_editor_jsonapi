@@ -6,6 +6,7 @@ preview_toggle:
     component:
       css/preview-toggle.css: {}
   dependencies:
+    - mercury_editor/edit_screen
     - core/drupal
     - core/drupalSettings
     - core/once
